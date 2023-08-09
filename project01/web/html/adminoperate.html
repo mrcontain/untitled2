@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script type="text/javascript" src="../js/axios.js"></script>
+  <script type="text/javascript" src="../js/vue.js"></script>
+
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <!-- 引入组件库 -->
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+</head>
+<body>
+<div id="app" >
+  <el-header class="header" style="height: 60px; font-size: 12px ; text-align: left;display: flex; padding-top: 24px">
+    <i class="el-icon-bangzhu" style="color:#409EFF;font-size: 35px;width: 300px">GM-System</i>
+    <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect"  text-color="#91c6fc" active-text-color="#1577DCFF" style="width: 600px; margin-left: 150px;border-bottom-color: transparent;">
+      <el-menu-item index="1" style="font-size: 15px">教师管理</el-menu-item>
+      <el-menu-item index="2" style="font-size: 15px">学生管理</el-menu-item>
+      <el-menu-item index="3" style="font-size: 15px">地区人数统计</el-menu-item>
+      <el-menu-item index="4" style="font-size: 15px">重置密码</el-menu-item>
+    </el-menu>
+    <el-dropdown  @command="handleCommand" style="margin-left: 250px">
+      <i class="el-icon-user-solid" style="color:#1577dc;font-size: 15px;"></i>
+      <span id="username" style="font-size: 15px;margin-left: 10px">{{userName}}</span>
+      <el-dropdown-menu slot="dropdown">
+        <el-dropdown-item command="b">注销</el-dropdown-item>
+        <el-dropdown-item command="a">修改密码</el-dropdown-item>
+      </el-dropdown-menu>
+    </el-dropdown>
+  </el-header>
+  <el-divider style="background-color: #13ce66"></el-divider>
+  <div  v-show="display1" >
+  <el-button type="primary" @click="dialog = true" style="margin-left: 270px">添加<i class="el-icon-upload el-icon--right" ></i></el-button>
+  <el-input placeholder="请输入内容" v-model="input3" clearable  style="width: 220px;margin-left: 590px">
+  <el-button slot="append" type="primary" icon="el-icon-search"  @click="submitWithKey">搜索</el-button>
+  </el-input>
+  <el-main>
+    <el-table :data="tableData"  style="height: 580px" border  highlight-current-row
+              @current-change="handleCurrentChange1">
+      <el-table-column prop="tno" label="教师编号" >
+        <template slot-scope="scope">
+          {{ scope.row.dsg_tno22 }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="tname" label="教师姓名">
+        <template slot-scope="scope">
+          {{ scope.row.dsg_tname22 }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="sex" label="性别">
+        <template slot-scope="scope">
+          {{ scope.row.dsg_tsex22 }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="age" label="年龄" :sortable="true" :sort-method="sortByDate">
+        <template slot-scope="scope">
+          {{ scope.row.dsg_tage22 }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="posd" label="职称">
+        <template slot-scope="scope">
+          {{ scope.row.dsg_tpos22 }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="phone" label="电话">
+        <template slot-scope="scope">
+          {{ scope.row.dsg_tpho22 }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="operator" label="操作" style="text-align: center">
+        <template slot-scope="scope">
+          <span style="text-align: center">
+            <el-button size="mini" type="primary" @click="handleEdit(scope.$index, scope.row)" >修改</el-button>
+            <el-popconfirm
+                    title="是否确认删除该条记录？" @confirm="handleDelete(scope.row)">
+            <el-button
+                  size="mini"
+                  type="danger" slot="reference">删除</el-button>
+              </el-popconfirm>
+          </span>
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-pagination
+            background
+            @current-change="handleCurrentChange"
+            layout="prev, pager, next"
+            :total="1000" :current-page.sync="currentPage1" style="text-align: center">
+    </el-pagination>
+  </el-main>
+
+  <!--        </el-container>-->
+  <!--    </el-container>-->
+  <el-drawer
+          title="教师信息"
+          :before-close="handleClose"
+          :visible.sync="dialog"
+          direction="ltr"
+          custom-class="demo-drawer"
+          ref="drawer"
+  >
+    <div class="demo-drawer__content">
+      <el-form :model="form" ref="form" class="demo-form">
+        <el-form-item label="教师编号" :label-width="formLabelWidth">
+          <el-input v-model="form.dsg_tno22" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="姓名" :label-width="formLabelWidth">
+          <el-input v-model="form.dsg_tname22" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="性别" :label-width="formLabelWidth">
+          <el-select v-model="form.dsg_tsex22" placeholder="请选择性别">
+            <el-option label="男" value="男"></el-option>
+            <el-option label="女" value="女"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="年龄" :label-width="formLabelWidth">
+          <el-input v-model="form.dsg_tage22" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="职称" :label-width="formLabelWidth">
+          <el-input v-model="form.dsg_tpos22" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="联系电话" :label-width="formLabelWidth">
+          <el-input v-model="form.dsg_tpho22" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div class="demo-drawer__footer" style="text-align: center">
+        <el-button @click="cancelForm">取 消</el-button>
+        <el-button type="primary" @click="submitForm('form')">确 定</el-button>
+      </div>
+    </div>
+  </el-drawer>
+
+  <el-drawer
+          title="教师信息"
+          :before-close="handleClose"
+          :visible.sync="dialog1"
+          direction="rtl"
+          custom-class="demo-drawer"
+          ref="drawer1"
+  >
+    <div class="demo-drawer__content">
+      <el-form :model="form1" ref="form1" class="demo-form1">
+        <el-form-item label="教师编号" :label-width="formLabelWidth">
+          <el-input v-model="form1.dsg_tno22" autocomplete="off" :disabled="true"></el-input>
+        </el-form-item>
+        <el-form-item label="姓名" :label-width="formLabelWidth">
+          <el-input v-model="form1.dsg_tname22" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="性别" :label-width="formLabelWidth">
+          <el-select v-model="form1.dsg_tsex22" placeholder="请选择性别">
+            <el-option label="男" value="男"></el-option>
+            <el-option label="女" value="女"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="年龄" :label-width="formLabelWidth">
+          <el-input v-model="form1.dsg_tage22" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="职称" :label-width="formLabelWidth">
+          <el-input v-model="form1.dsg_tpos22" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="联系电话" :label-width="formLabelWidth">
+          <el-input v-model="form1.dsg_tpho22" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div class="demo-drawer__footer" style="text-align: center">
+        <el-button @click="cancelForm1">取 消</el-button>
+        <el-button type="primary" @click="submitForm('form1')" >确 定</el-button>
+      </div>
+    </div>
+  </el-drawer>
+  </div>
+  <div  v-show="display2" >
+    <el-button type="primary" @click="dialog2 = true" style="margin-left: 270px">添加<i class="el-icon-upload el-icon--right" ></i></el-button>
+    <el-input placeholder="请输入内容" v-model="input4" clearable  style="width: 220px;margin-left: 590px">
+      <el-button slot="append" type="primary" icon="el-icon-search"  @click="submitWithKey1">搜索</el-button>
+    </el-input>
+    <el-main>
+      <el-table :data="tableData1"  height="580" border  highlight-current-row
+                @current-change="handleCurrentChange1">
+        <el-table-column prop="sno" label="学号" sortable>
+          <template slot-scope="scope">
+            {{ scope.row.dsg_sno22 }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="studentName" label="学生姓名">
+          <template slot-scope="scope">
+            {{ scope.row.dsg_sname22 }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="sex" label="性别">
+          <template slot-scope="scope">
+            {{ scope.row.dsg_ssex22 }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="age" label="年龄">
+          <template slot-scope="scope">
+            {{ scope.row.dsg_sage22 }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="area" label="生源地">
+          <template slot-scope="scope">
+            {{ scope.row.dsg_aname22 }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="scsum" label="已修学分">
+          <template slot-scope="scope">
+            {{ scope.row.dsg_ssum22 }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="class" label="班级">
+          <template slot-scope="scope">
+            {{ scope.row.dsg_clname22 }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="operator" label="操作" style="text-align: center">
+          <template slot-scope="scope">
+          <span style="text-align: center">
+            <el-button size="mini" type="primary" @click="handleEdit1(scope.$index, scope.row)" >修改</el-button>
+            <el-popconfirm
+                    title="是否确认删除该条记录？" @confirm="handleDelete1(scope.row)">
+            <el-button
+                    size="mini"
+                    type="danger" slot="reference">删除</el-button>
+              </el-popconfirm>
+          </span>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-pagination
+              background
+              @current-change="handleCurrentChange2"
+              layout="prev, pager, next"
+              :total="1000" :current-page.sync="currentPage2" style="text-align: center">
+      </el-pagination>
+    </el-main>
+
+    <!--        </el-container>-->
+    <!--    </el-container>-->
+    <el-drawer
+            title="学生信息"
+            :before-close="handleClose"
+            :visible.sync="dialog2"
+            direction="ltr"
+            custom-class="demo-drawer"
+            ref="drawer"
+    >
+      <div class="demo-drawer__content">
+        <el-form :model="form2" ref="form2" class="demo-form">
+          <el-form-item label="学号" :label-width="formLabelWidth">
+            <el-input v-model="form2.dsg_sno22" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="姓名" :label-width="formLabelWidth">
+            <el-input v-model="form2.dsg_sname22" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="性别" :label-width="formLabelWidth">
+            <el-select v-model="form2.dsg_ssex22" placeholder="请选择性别">
+              <el-option label="男" value="男"></el-option>
+              <el-option label="女" value="女"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="年龄" :label-width="formLabelWidth">
+            <el-input v-model="form2.dsg_sage22" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="生源地" :label-width="formLabelWidth">
+            <el-input v-model="form2.dsg_aname22" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="已修学分" :label-width="formLabelWidth">
+            <el-input v-model="form2.dsg_ssum22" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="班级" :label-width="formLabelWidth">
+            <el-input v-model="form2.dsg_clname22" autocomplete="off"></el-input>
+          </el-form-item>
+        </el-form>
+        <div class="demo-drawer__footer" style="text-align: center">
+          <el-button @click="cancelForm2">取 消</el-button>
+          <el-button type="primary" @click="submitForm1('form2')">确 定</el-button>
+        </div>
+      </div>
+    </el-drawer>
+
+    <el-drawer
+            title="学生信息"
+            :before-close="handleClose"
+            :visible.sync="dialog3"
+            direction="rtl"
+            custom-class="demo-drawer"
+            ref="drawer1"
+    >
+      <div class="demo-drawer__content">
+        <el-form :model="form3" ref="form3" class="demo-form1">
+          <el-form-item label="学号" :label-width="formLabelWidth">
+            <el-input v-model="form3.dsg_sno22" autocomplete="off" :disabled="true"></el-input>
+          </el-form-item>
+          <el-form-item label="姓名" :label-width="formLabelWidth">
+            <el-input v-model="form3.dsg_sname22" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="性别" :label-width="formLabelWidth">
+            <el-select v-model="form3.dsg_ssex22" placeholder="请选择性别">
+              <el-option label="男" value="男"></el-option>
+              <el-option label="女" value="女"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="年龄" :label-width="formLabelWidth">
+            <el-input v-model="form3.dsg_sage22" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="生源地" :label-width="formLabelWidth">
+            <el-input v-model="form3.dsg_aname22" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="已修学分" :label-width="formLabelWidth">
+            <el-input v-model="form3.dsg_ssum22" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="班级" :label-width="formLabelWidth">
+            <el-input v-model="form3.dsg_clname22" autocomplete="off"></el-input>
+          </el-form-item>
+        </el-form>
+        <div class="demo-drawer__footer" style="text-align: center">
+          <el-button @click="cancelForm3">取 消</el-button>
+          <el-button type="primary" @click="submitForm1('form3')" >确 定</el-button>
+        </div>
+      </div>
+    </el-drawer>
+  </div>
+  <div  v-show="display3" >
+    <el-input placeholder="请输入内容" v-model="input5" clearable  style="width: 220px;margin-left: 590px">
+      <el-button slot="append" type="primary" icon="el-icon-search"  @click="submitWithKey2">搜索</el-button>
+    </el-input>
+    <el-main>
+      <el-table :data="tableData2"  height="580" border  highlight-current-row
+                @current-change="handleCurrentChange1">
+        <el-table-column prop="aname" label="生源地">
+          <template slot-scope="scope">
+            {{ scope.row.dsg_aname22 }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="number" label="人数">
+          <template slot-scope="scope">
+            {{ scope.row.numberofpeople }}
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-pagination
+              background
+              @current-change="handleCurrentChange3"
+              layout="prev, pager, next"
+              :total="1000" :current-page.sync="currentPage3" style="text-align: center">
+      </el-pagination>
+    </el-main>
+
+  </div>
+  <div  v-show="display4" >
+    <el-main>
+      <el-button type="primary" @click="subStep" style="text-align: left;margin-left: 40px" icon="el-icon-arrow-left" v-show="!step4">上一步</el-button>
+      <el-button type="primary" @click="addStep" style="margin-left: 1100px" v-show="!step4">下一步<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+      <el-select v-model="select" clearable placeholder="请选择身份"  style="position: absolute; top:50%;left: 50%;transform: translate(-50%,-50%)" v-show="step1">
+        <el-option
+                v-for="item in options"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+        </el-option>
+      </el-select>
+      <el-input
+              type="text"
+              placeholder="请输入用户名"
+              v-model="account"
+              show-word-limit clearable  style="width: 250px;position: absolute; top:50%;left: 50%;transform: translate(-50%,-50%)" v-show="step2"
+      >
+      </el-input>
+      <el-input
+              type="text"
+              placeholder="请输入密码"
+              v-model="password"
+              show-word-limit clearable  style="width: 250px;position: absolute; top:50%;left: 50%;transform: translate(-50%,-50%)" v-show="step3"
+      >
+      </el-input>
+      <el-result icon="success" title="已经成功重置密码" style="position: absolute; top:50%;left: 50%;transform: translate(-50%,-50%)" v-show="step4">
+      </el-result>
+      <el-steps :active="activeStep" finish-status="success" simple style="margin-top: 480px">
+        <el-step title="选择身份" ></el-step>
+        <el-step title="输入账号" ></el-step>
+        <el-step title="重置密码" ></el-step>
+      </el-steps>
+    </el-main>
+
+  </div>
+
+</div>
+</body>
+<script>
+  const vm =new Vue(
+          {
+            el: '#app',
+            created() {
+              let that = this;
+              that.$nextTick(() => {
+                var urlParam = this.getUrlParam('username',window.location.href);
+                console.log(urlParam);
+                console.log(encodeURI(urlParam));
+                var s = decodeURI(urlParam);
+                vm.$data.userName=s;
+              });
+            },
+            data() {
+              return {
+                activeStep:0,
+                step1:true,
+                step2:false,
+                step3:false,
+                step4:false,
+                select:'',
+                account:'',
+                password:'',
+                options: [{
+                  value: 'tea',
+                  label: '教师'
+                }, {
+                  value: 'stu',
+                  label: '学生'
+                }, {
+                  value: 'super',
+                  label: '管理员'
+                }],
+                userName: '',
+                tableData: [],
+                tableData1: [],
+                tableData2: [],
+                tableData3: [],
+                page: 1,
+                activeIndex: '1',
+                dialog: false,
+                dialog1: false,
+                dialog2: false,
+                dialog3: false,
+                form: {
+                  dsg_tno22: '',
+                  dsg_tsex22: '',
+                  dsg_tname22: '',
+                  dsg_tage22: '',
+                  dsg_tpos22: '',
+                  dsg_tpho22: ''
+                },
+                form1: {
+                  dsg_tno22: '',
+                  dsg_tsex22: '',
+                  dsg_tname22: '',
+                  dsg_tage22: '',
+                  dsg_tpos22: '',
+                  dsg_tpho22: ''
+                },
+                form2: {
+                  dsg_sno22: '',
+                  dsg_ssex22: '',
+                  dsg_sname22: '',
+                  dsg_sage22: '',
+                  dsg_aname22: '',
+                  dsg_ssum22: '',
+                  dsg_clname22: ''
+                },
+                form3: {
+                  dsg_sno22: '',
+                  dsg_ssex22: '',
+                  dsg_sname22: '',
+                  dsg_sage22: '',
+                  dsg_aname22: '',
+                  dsg_ssum22: '',
+                  dsg_clname22: ''
+                },
+                formLabelWidth: '80px',
+                timer: null,
+                input3: '',
+                input4: '',
+                input5: '',
+                currentRow: null,
+                display1: true,
+                display2: false,
+                display3: false,
+                display4: false,
+                currentPage1:1,
+                currentPage2:1,
+                currentPage3:1,
+                currentPage4:1,
+              }
+            },
+            mounted(){
+              axios({
+                method: "post",
+                url: "http://localhost:8080/pro1/OperatorServlet",
+                params: {
+                  No:1,
+                  keyWord:'',
+                  type:'teacher'
+                }
+              }).then(function (response) {
+                var users = response.data;
+                var s = JSON.stringify(users);
+                var parse = JSON.parse(s);
+                vm.$data.tableData=parse;
+              })
+              axios({
+                method: "post",
+                url: "http://localhost:8080/pro1/OperatorServlet",
+                params: {
+                  No:1,
+                  keyWord:'',
+                  type:'student'
+                }
+              }).then(function (response) {
+                var users = response.data;
+                var s = JSON.stringify(users);
+                var parse = JSON.parse(s);
+                vm.$data.tableData1=parse;
+              })
+              axios({
+                method: "post",
+                url: "http://localhost:8080/pro1/OperatorServlet",
+                params: {
+                  No:1,
+                  keyWord:'',
+                  type:'area'
+                }
+              }).then(function (response) {
+                var users = response.data;
+                var s = JSON.stringify(users);
+                var parse = JSON.parse(s);
+                vm.$data.tableData2=parse;
+              })
+
+              this.$message({
+                message: '登录成功',
+                type: 'success'
+              });
+
+            },
+            methods:{
+              handleCommand(command) {
+                if(command=='a'){
+                  window.location.href='updatePassword.html'+'?account='+vm.$data.userName+'&&identity=super'
+                }
+                if (command=='b'){
+                  window.location.href='login.html'
+                }
+              },
+              sortByDate(obj1, obj2){
+                let val1 = obj1.dsg_tage22;
+                let val2 = obj2.dsg_tage22;
+                return val1 - val2
+              },
+              addStep(){
+                if(vm.$data.activeStep<=2){
+                  vm.$data.activeStep++;
+                  switch (vm.$data.activeStep) {
+                    case 1:{
+                      vm.$data.step2=true;
+                      vm.$data.step1=false;
+                      const h = this.$createElement;
+                      this.$message({
+                        message: h('p', null, [
+                          h('span', null, '请输入 '),
+                          h('i', { style: 'color: teal' }, '账号')
+                        ])
+                      });
+                      break;
+                    }
+
+                    case 2:{
+                      vm.$data.step3=true;
+                      vm.$data.step2=false;
+                      const h = this.$createElement;
+                      this.$message({
+                        message: h('p', null, [
+                          h('span', null, '请输入 '),
+                          h('i', { style: 'color: teal' }, '密码')
+                        ])
+                      });
+                      break;
+                    }
+
+                    case 3:{
+                      vm.$data.step4=true;
+                      vm.$data.step3=false;
+                      axios({
+                        method: "post",
+                        url: "http://localhost:8080/pro1/UpdateAccountServlet",
+                        data: {
+                          account: vm.$data.account,
+                          password: vm.$data.password,
+                          identity:vm.$data.select
+                        }
+                      }).then(function (response) {
+                        setTimeout(function () {
+                          location.reload();
+                        }, 2000);
+                      })
+                      break;
+                    }
+                  }
+                }
+              },
+              subStep(){
+                if(vm.$data.activeStep>=1){
+                  vm.$data.activeStep--;
+                  switch (vm.$data.activeStep) {
+                    case 0:{
+                      vm.$data.step2=false;
+                      vm.$data.step1=true;
+                      const h = this.$createElement;
+                      this.$message({
+                        message: h('p', null, [
+                          h('span', null, '选择 '),
+                          h('i', { style: 'color: teal' }, '身份')
+                        ])
+                      });
+                      break;
+                    }
+
+                    case 1:{
+                      vm.$data.step3=false;
+                      vm.$data.step2=true;
+                      const h = this.$createElement;
+                      this.$message({
+                        message: h('p', null, [
+                          h('span', null, '请输入 '),
+                          h('i', { style: 'color: teal' }, '账号')
+                        ])
+                      });
+                      break;
+                    }
+
+                  }
+                }
+              },
+              submitWithKey(){
+                axios({
+                  method: "post",
+                  url: "http://localhost:8080/pro1/OperatorServlet",
+                  params: {
+                    keyWord:vm.$data.input3,
+                    No:1,
+                    type:'teacher'
+                  }
+                }).then(function (response) {
+                  vm.$data.currentPage1=1;
+                  var users = response.data;
+                  var s = JSON.stringify(users);
+                  var parse = JSON.parse(s);
+                  vm.$data.tableData=parse;
+                })
+              },
+              submitWithKey1(){
+                axios({
+                  method: "post",
+                  url: "http://localhost:8080/pro1/OperatorServlet",
+                  params: {
+                    keyWord:vm.$data.input4,
+                    No:1,
+                    type:'student'
+                  }
+                }).then(function (response) {
+                  vm.$data.currentPage2=1;
+                  var users = response.data;
+                  var s = JSON.stringify(users);
+                  var parse = JSON.parse(s);
+                  vm.$data.tableData1=parse;
+                })
+              },
+              submitWithKey2(){
+                axios({
+                  method: "post",
+                  url: "http://localhost:8080/pro1/OperatorServlet",
+                  params: {
+                    keyWord:vm.$data.input5,
+                    No:1,
+                    type:'area'
+                  }
+                }).then(function (response) {
+                  vm.$data.currentPage3=1;
+                  var users = response.data;
+                  var s = JSON.stringify(users);
+                  var parse = JSON.parse(s);
+                  vm.$data.tableData2=parse;
+                })
+              },
+              submitForm(formName) {
+                let dsg_tno22=this.form.dsg_tno22;
+                let dsg_tsex22=this.form.dsg_tsex22;
+                let dsg_tname22=this.form.dsg_tname22
+                let dsg_tage22=this.form.dsg_tage22;
+                let dsg_tpos22=this.form.dsg_tpos22;
+                let dsg_tpho22=this.form.dsg_tpho22;
+                let flag=1;
+                let message = '添加成功';
+                if (formName==='form1'){
+                  flag=0;
+                  message='修改成功';
+                  dsg_tno22=this.form1.dsg_tno22;
+                  dsg_tsex22=this.form1.dsg_tsex22;
+                  dsg_tname22=this.form1.dsg_tname22
+                  dsg_tage22=this.form1.dsg_tage22;
+                  dsg_tpos22=this.form1.dsg_tpos22;
+                  dsg_tpho22=this.form1.dsg_tpho22;
+                }
+                this.$refs[formName].validate((valid) => {
+                  if (valid) {
+                    axios({
+                        method: "post",
+                        url: "http://localhost:8080/pro1/AdServlet",
+                        data: {
+                          type:'teacher',
+                          flag:flag,
+                          dsg_tno22:dsg_tno22,
+                          dsg_tsex22:dsg_tsex22,
+                          dsg_tname22:dsg_tname22,
+                          dsg_tage22:dsg_tage22,
+                          dsg_tpos22:dsg_tpos22,
+                          dsg_tpho22:dsg_tpho22
+                        }
+                    }).then(function (response) {
+                        if (response.data === "success") {
+                          vm.handleCurrentChange(vm.$data.currentPage1)
+                          vm.$message({
+                            message: message,
+                            type: 'success'
+                          })
+                          vm.dialog = false;
+                          vm.dialog1=false;
+                    }
+                    })
+                  } else {
+                    vm.$message({
+                      message: '添加失败',
+                      type: 'warning'
+                    })
+                    return false;
+                  }
+                });
+              },
+              submitForm1(formName) {
+                let dsg_sno22=this.form2.dsg_sno22;
+                let dsg_ssex22=this.form2.dsg_ssex22;
+                let dsg_sname22=this.form2.dsg_sname22
+                let dsg_sage22=this.form2.dsg_sage22;
+                let dsg_ssum22=this.form2.dsg_ssum22;
+                let dsg_aname22=this.form2.dsg_aname22;
+                let dsg_clname22=this.form2.dsg_clname22;
+                let flag=1;
+                let message = '添加成功';
+                if (formName==='form3'){
+                  flag=0;
+                  message='修改成功';
+                  dsg_sno22=this.form3.dsg_sno22;
+                  dsg_ssex22=this.form3.dsg_ssex22;
+                  dsg_sname22=this.form3.dsg_sname22
+                  dsg_sage22=this.form3.dsg_sage22;
+                  dsg_ssum22=this.form3.dsg_ssum22;
+                  dsg_aname22=this.form3.dsg_aname22;
+                  dsg_clname22=this.form3.dsg_clname22;
+                }
+                this.$refs[formName].validate((valid) => {
+                  if (valid) {
+                    axios({
+                      method: "post",
+                      url: "http://localhost:8080/pro1/AdServlet",
+                      data: {
+                        type:'student',
+                        flag:flag,
+                        dsg_sno22:dsg_sno22,
+                        dsg_ssex22:dsg_ssex22,
+                        dsg_sname22:dsg_sname22,
+                        dsg_sage22:dsg_sage22,
+                        dsg_ssum22:dsg_ssum22,
+                        dsg_aname22:dsg_aname22,
+                        dsg_clname22:dsg_clname22
+                      }
+                    }).then(function (response) {
+                      if (response.data === "success") {
+                        vm.handleCurrentChange2(vm.$data.currentPage2)
+                        vm.$message({
+                          message: message,
+                          type: 'success'
+                        })
+                        vm.dialog2 = false;
+                        vm.dialog3=false;
+                      }
+                    })
+                  } else {
+                    vm.$message({
+                      message: '添加失败',
+                      type: 'warning'
+                    })
+                    return false;
+                  }
+                });
+              },
+              handleSelect(key, keyPath) {
+                console.log(key);
+                console.log(keyPath);
+                switch (key) {
+                  case '1':{
+                    vm.$data.display1=true;
+                    vm.$data.display2=false;
+                    vm.$data.display3=false;
+                    vm.$data.display4=false;
+                    break
+                  }
+                  case '2':{
+                    vm.$data.display1=false;
+                    vm.$data.display2=true;
+                    vm.$data.display3=false;
+                    vm.$data.display4=false;
+                    break
+                  }
+                  case '3':{
+                    vm.$data.display1=false;
+                    vm.$data.display2=false;
+                    vm.$data.display3=true;
+                    vm.$data.display4=false;
+                    break
+                  }
+                  case '4':{
+                    vm.$data.display1=false;
+                    vm.$data.display2=false;
+                    vm.$data.display3=false;
+                    vm.$data.display4=true;
+                    const h = this.$createElement;
+                    this.$message({
+                      message: h('p', null, [
+                        h('span', null, '请选择 '),
+                        h('i', { style: 'color: teal' }, '身份')
+                      ])
+                    });
+                    break
+                  }
+                }
+
+              },
+              handleEdit(index, row) {
+                console.log(index);
+                console.log(row);
+                vm.$data.dialog1=true;
+                vm.$data.form1.dsg_tno22=row.dsg_tno22;
+                vm.$data.form1.dsg_tsex22=row.dsg_tsex22;
+                vm.$data.form1.dsg_tname22=row.dsg_tname22;
+                vm.$data.form1.dsg_tage22=row.dsg_tage22;
+                vm.$data.form1.dsg_tpos22=row.dsg_tpos22;
+                vm.$data.form1.dsg_tpho22=row.dsg_tpho22;
+
+              },
+              handleEdit1(index, row) {
+                console.log(index);
+                console.log(row);
+                vm.$data.dialog3=true;
+                vm.$data.form3.dsg_sno22=row.dsg_sno22
+                vm.$data.form3.dsg_ssex22=row.dsg_ssex22
+                vm.$data.form3.dsg_sname22=row.dsg_sname22
+                vm.$data.form3.dsg_sage22=row.dsg_sage22
+                vm.$data.form3.dsg_aname22=row.dsg_aname22
+                vm.$data.form3.dsg_ssum22=row.dsg_ssum22
+                vm.$data.form3.dsg_clname22=row.dsg_clname22
+              },
+              handleDelete(row) {
+                axios({
+                  method: "post",
+                  url: "http://localhost:8080/pro1/OperatorFordelServlet",
+                  data: {
+                    "No":vm.$data.currentPage1,
+                    "tno":row.dsg_tno22,
+                    "keyWord":vm.$data.input3,
+                    "type":'teacher'
+                  }
+                }).then(function (response) {
+                  var users = response.data;
+                  var s = JSON.stringify(users);
+                  var parse = JSON.parse(s);
+                  vm.$data.tableData=parse;
+                })
+              },
+              handleDelete1(row) {
+                axios({
+                  method: "post",
+                  url: "http://localhost:8080/pro1/OperatorFordelServlet",
+                  data: {
+                    "No":vm.$data.currentPage2,
+                    "sno":row.dsg_sno22,
+                    "keyWord":vm.$data.input4,
+                    "type":'student'
+                  }
+                }).then(function (response) {
+                  var users = response.data;
+                  var s = JSON.stringify(users);
+                  var parse = JSON.parse(s);
+                  vm.$data.tableData1=parse;
+                })
+              },
+              handleCurrentChange(val) {
+                axios({
+                  method: "post",
+                  url: "http://localhost:8080/pro1/OperatorServlet",
+                  params: {
+                    No:val,
+                    keyWord:vm.$data.input3,
+                    type:'teacher'
+                  }
+                }).then(function (response) {
+                  var users = response.data;
+                  var s = JSON.stringify(users);
+                  var parse = JSON.parse(s);
+                  vm.$data.tableData=parse;
+                })
+              },
+              handleCurrentChange2(val) {
+                axios({
+                  method: "post",
+                  url: "http://localhost:8080/pro1/OperatorServlet",
+                  params: {
+                    No:val,
+                    keyWord:vm.$data.input4,
+                    type:'student'
+                  }
+                }).then(function (response) {
+                  var users = response.data;
+                  var s = JSON.stringify(users);
+                  var parse = JSON.parse(s);
+                  vm.$data.tableData1=parse;
+                })
+              },
+              handleCurrentChange3(val) {
+                axios({
+                  method: "post",
+                  url: "http://localhost:8080/pro1/OperatorServlet",
+                  params: {
+                    No:val,
+                    keyWord:vm.$data.input5,
+                    type:'area'
+                  }
+                }).then(function (response) {
+                  var users = response.data;
+                  var s = JSON.stringify(users);
+                  var parse = JSON.parse(s);
+                  vm.$data.tableData2=parse;
+                })
+              },
+              getUrlParam: function getURLParameter(name, urlsearch) {
+                return (
+                        decodeURIComponent(
+                                (new RegExp("[?|&]" + name + "=" + "([^&;]+?)(&|#|;|$)").exec(
+                                        urlsearch || location.search
+                                ) || [, ""])[1].replace(/\+/g, "%20")
+                        ) || null
+                );
+              },
+              handleClose(done) {
+                this.$confirm('确定要关闭表单吗？').then(_ => {
+                  done();
+                }).catch(_ => {});
+              },
+              cancelForm() {
+                this.dialog = false;
+              },
+              cancelForm1() {
+                this.dialog1 = false;
+              },
+              cancelForm2() {
+                this.dialog2 = false;
+              },
+              cancelForm3() {
+                this.dialog3 = false;
+              },
+              handleCurrentChange1(val) {
+                this.currentRow = val;
+              }
+            }
+          }
+  )
+</script>
+<style>
+  .el-col {
+    border-radius: 4px;
+  }
+  .bg-purple-dark {
+    background: #99a9bf;
+  }
+  .bg-purple {
+    background: #d3dce6;
+  }
+  .bg-purple-light {
+    background: #e5e9f2;
+  }
+  .grid-content {
+    border-radius: 4px;
+    min-height: 36px;
+  }
+  .right {
+    text-align: right;
+  }
+
+  .operate {
+    width: 80%;
+    height: 100%;
+    /*background-size: cover;*/
+  }
+
+  .header {
+    /*background-color: #EBEEF5;*/
+    color: #909399;
+    line-height: 60px;
+  }
+
+  .el-aside {
+    color: #333;
+  }
+
+</style>
+
+
+</html>

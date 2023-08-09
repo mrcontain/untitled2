@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>自动拍照</title>
+    <script type="text/javascript" src="../js/axios.js"></script>
+</head>
+<body>
+<video id="video" autoplay></video>
+<canvas id="canvas" style="display: none"></canvas>
+<button id="capture">拍照</button>
+</body>
+
+<script>
+    var video = document.getElementById('video');
+    var canvas = document.getElementById('canvas');
+    var context = canvas.getContext('2d');
+    var captureButton = document.getElementById('capture');
+    var count = 0;
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function(stream) {
+            video.srcObject = stream;
+            video.play();
+            setTimeout(capture, 1000); // 延迟1秒开始拍照
+        })
+        .catch(function(err) {
+            console.log('无法获取视频流：', err);
+        });
+
+    function capture() {
+        if (count < 1) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(function(blob) {
+                var formData = new FormData();
+                formData.append('image', blob, 'image' + count + '.png');
+                axios.post('http://localhost:8080/pro1/save', formData)
+                    .then(function(response) {
+                        console.log('保存成功');
+                        count++;
+                        var data1 = response.data;
+                        axios({
+                            method: "post",
+                            url: "http://localhost:8080/pro1/logonServlet",
+                            data: {
+                                name: getURLParameter('name',window.location.href),
+                                password: getURLParameter('pass',window.location.href),
+                                face:data1
+                            }
+                        }).then(function(response) {
+                            alert(data1);
+
+                        })
+                        window.location.href = "login.html"
+                        if (count < 1) {
+                            capture(); // 每隔1秒拍照一次
+                        }
+                    })
+                    .catch(function(error) {
+                        console.log('保存失败：', error);
+                    });
+            });
+        } else {
+            console.log('已经拍摄了100张照片');
+        }
+    }
+    function getURLParameter(name, urlsearch) {
+        return (
+            decodeURIComponent(
+                (new RegExp("[?|&]" + name + "=" + "([^&;]+?)(&|#|;|$)").exec(
+                    urlsearch || location.search
+                ) || [, ""])[1].replace(/\+/g, "%20")
+            ) || null
+        );
+    }
+
+    captureButton.style.display = 'none'; // 隐藏拍照按钮
+
+</script>
+</html>

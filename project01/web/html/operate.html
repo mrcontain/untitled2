@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="../js/axios.js"></script>
+    <script type="text/javascript" src="../js/vue.js"></script>
+
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+</head>
+<body>
+<div id="app" >
+    <el-header class="header" style="height: 60px; font-size: 12px ; text-align: left;display: flex; padding-top: 26px">
+        <i class="el-icon-menu" style="color:#409EFF;font-size: 35px;width: 300px">GM-System</i>
+        <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect"  text-color="#91c6fc" active-text-color="#1577DCFF" style="width: 600px; margin-left: 150px;border-bottom-color: transparent;">
+            <el-menu-item index="1" style="font-size: 15px">个人信息查询</el-menu-item>
+            <el-menu-item index="2" style="font-size: 15px">成绩查询</el-menu-item>
+            <el-menu-item index="3" style="font-size: 15px">班级课表查询</el-menu-item>
+            <el-menu-item index="4" style="font-size: 15px">课程查询</el-menu-item>
+        </el-menu>
+            <el-dropdown style="margin-left: 250px">
+                <i class="el-icon-user-solid" style="color:#1577dc;font-size: 15px;"></i>
+                <span id="username" style="font-size: 15px;margin-left: 10px">王小虎</span>
+                <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item>注销</el-dropdown-item>
+                    <el-dropdown-item>更换用户</el-dropdown-item>
+                    <el-dropdown-item>修改密码</el-dropdown-item>
+                </el-dropdown-menu>
+            </el-dropdown>
+    </el-header>
+    <el-divider style="background-color: #13ce66"></el-divider>
+<!--    <el-container style="height: 740px; border: 1px solid #ccc">-->
+<!--        <el-aside width="200px" >-->
+<!--            <el-menu :default-openeds="['1', '3']" style="border: transparent">-->
+<!--                <el-menu-item index="1">-->
+<!--                    <template slot="title"><i class="el-icon-message"></i>个人信息查询</template>-->
+<!--                </el-menu-item>-->
+<!--                <el-menu-item index="2">-->
+<!--                    <template slot="title"><i class="el-icon-menu"></i>成绩查询</template>-->
+<!--                </el-menu-item>-->
+<!--                <el-menu-item index="3">-->
+<!--                    <template slot="title"><i class="el-icon-setting"></i>班级课表查询</template>-->
+<!--                </el-menu-item>-->
+<!--                <el-menu-item index="4">-->
+<!--                    <template slot="title"><i class="el-icon-setting"></i>课程查询</template>-->
+<!--                </el-menu-item>-->
+<!--                <el-menu-item index="5">-->
+<!--                    <template slot="title"><i class="el-icon-setting"></i>修改密码</template>-->
+<!--                </el-menu-item>-->
+<!--            </el-menu>-->
+<!--        </el-aside>-->
+
+<!--        <el-container>-->
+            <!--        <el-header style="text-align: right; font-size: 12px">-->
+            <!--            <el-dropdown>-->
+            <!--                <i class="el-icon-setting" style="margin-right: 15px"></i>-->
+            <!--                <el-dropdown-menu slot="dropdown">-->
+            <!--                    <el-dropdown-item>查看</el-dropdown-item>-->
+            <!--                    <el-dropdown-item>新增</el-dropdown-item>-->
+            <!--                    <el-dropdown-item>删除</el-dropdown-item>-->
+            <!--                </el-dropdown-menu>-->
+            <!--            </el-dropdown>-->
+            <!--            <span>王小虎</span>-->
+            <!--        </el-header>-->
+
+            <el-main>
+                <el-table :data="tableData"  height="620" border>
+                    <el-table-column prop="password" label="姓名">
+                        <template slot-scope="scope">
+                            {{ scope.row.name }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="name" label="密码">
+                        <template slot-scope="scope">
+                            {{ scope.row.password }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="operator" label="操作" style="text-align: center">
+                        <template slot-scope="scope">
+<!--                            <el-button-->
+<!--                                    size="mini"-->
+<!--                                    type="primary"-->
+<!--                                    @click="handleEdit(scope.$index, scope.row)">编辑</el-button>-->
+                           <span style="text-align: center"><el-button
+                                    size="mini"
+                                    type="danger"
+                                    @click="handleDelete(scope.$index, scope.row)">删除</el-button></span>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                <el-pagination
+                        background
+                        @current-change="handleCurrentChange"
+                        layout="prev, pager, next"
+                        :total="1000" style="text-align: center">
+                </el-pagination>
+            </el-main>
+<!--        </el-container>-->
+<!--    </el-container>-->
+</div>
+</body>
+<script>
+    const vm =new Vue(
+        {
+            el: '#app',
+            created() {
+                let that = this;
+                that.$nextTick(() => {
+                    var urlParam = this.getUrlParam('username',window.location.href);
+                    console.log(urlParam);
+                    console.log(encodeURI(urlParam));
+                    var s = decodeURI(urlParam);
+                    document.getElementById('username').innerText=s;
+                });
+            },
+            data() {
+                return {
+                    userName:'',
+                    // tableData: Array(20).fill(item)
+                    tableData:[],
+                    page:1,
+                    activeIndex: '1'
+                }
+            },
+            mounted(){
+                // this.data().userName="cdc"
+                axios({
+                    method: "post",
+                    url: "http://localhost:8080/pro1/OperatorServlet",
+                    params: {
+                        No:1
+                    }
+                }).then(function (response) {
+                        var users = response.data;
+                        var s = JSON.stringify(users);
+                    var parse = JSON.parse(s);
+                    vm.$data.tableData=parse;
+                })
+                this.$message({
+                    message: '登录成功',
+                    type: 'success'
+                });
+
+            },
+            methods:{
+                handleSelect(key, keyPath) {
+                    console.log(key, keyPath);
+                },
+                handleEdit(index, row) {
+                    console.log(index);
+                    console.log(row.password);
+
+                },
+                handleDelete(index, row) {
+                    axios({
+                        method: "post",
+                        url: "http://localhost:8080/pro1/OperatorFordelServlet",
+                        data: {
+                            "No":vm.$data.page,
+                            "id":index+1,
+                        }
+                    }).then(function (response) {
+                        var users = response.data;
+                        var s = JSON.stringify(users);
+                        var parse = JSON.parse(s);
+                        vm.$data.tableData=parse;
+                    })
+                },
+                handleCurrentChange(val) {
+                    axios({
+                        method: "post",
+                        url: "http://localhost:8080/pro1/OperatorServlet",
+                        params: {
+                            No:val
+                        }
+                    }).then(function (response) {
+                        var users = response.data;
+                        var s = JSON.stringify(users);
+                        var parse = JSON.parse(s);
+                        vm.$data.tableData=parse;
+                        vm.$data.page=val;
+                    })
+                },
+                getUrlParam: function getURLParameter(name, urlsearch) {
+                    return (
+                        decodeURIComponent(
+                            (new RegExp("[?|&]" + name + "=" + "([^&;]+?)(&|#|;|$)").exec(
+                                urlsearch || location.search
+                            ) || [, ""])[1].replace(/\+/g, "%20")
+                        ) || null
+                    );
+                },
+
+            }
+        }
+    )
+</script>
+<style>
+    .el-col {
+        border-radius: 4px;
+    }
+    .bg-purple-dark {
+        background: #99a9bf;
+    }
+    .bg-purple {
+        background: #d3dce6;
+    }
+    .bg-purple-light {
+        background: #e5e9f2;
+    }
+    .grid-content {
+        border-radius: 4px;
+        min-height: 36px;
+    }
+    .right {
+        text-align: right;
+    }
+
+    .operate {
+        width: 80%;
+        height: 100%;
+        /*background-size: cover;*/
+    }
+
+    .header {
+        /*background-color: #EBEEF5;*/
+        color: #909399;
+        line-height: 60px;
+    }
+
+    .el-aside {
+        color: #333;
+    }
+
+</style>
+
+
+</html>
